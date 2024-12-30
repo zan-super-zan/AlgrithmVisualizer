@@ -2,12 +2,9 @@
 #include "Random.h"
 #include "SortAlgorithm.h"
 
-#include <thread>
-#include <mutex>
-
 
 App::App()
-	:m_Shader(nullptr), m_Renderer(10000), m_ImGuiManager(nullptr)
+	:m_Shader(nullptr), m_Renderer(10000), m_ImGuiManager(nullptr), m_RectWidth(5.0f)
 {
 	m_Window = std::make_unique<Window>(1280, 720, "Alorithm Visualizer");
 	m_ImGuiManager = std::make_unique<ImGuiManager>(m_Window->GetNativeWindow());
@@ -26,18 +23,17 @@ void App::Run()
 {
 	Init();
 
-	ShuffleBars();
-
-	std::thread sorterThread([&]() {
-		m_SortContext->Sort(m_Rectangles);
-		});
-	sorterThread.detach();
+	ShuffleBars(m_RectWidth);
 
 	while (!m_Window->ShouldClose())
 	{
 		Update();
 		Render();
 	}
+	m_StopSort = true;
+
+	if (m_SorterThread && m_SorterThread->joinable())
+		m_SorterThread->detach();
 }
 
 void App::MakeRectangles()
@@ -45,18 +41,15 @@ void App::MakeRectangles()
 	for (uint32_t i = 0; i < m_Rectangles.size(); i++)
 		m_Renderer.SubmitRect(m_Rectangles[i], { 1, 1, 1 });
 
-	//for (uint32_t i = 0; i < m_RectangleHeights.size(); i++)
-	//	m_Renderer.SubmitRect({ i * m_RectWidth, 0, m_RectWidth, m_RectangleHeights[i] }, { 1, 1, 1 });
 }
 
-void App::ShuffleBars()
+void App::ShuffleBars(uint32_t rectWidth)
 {
 	m_Rectangles.clear();
-	m_RectWidth = 5;
 	int32_t counter = 0;
 	while (m_RectWidth * counter <= m_Window->GetWidth())
 	{
-		m_Rectangles.emplace_back(FRectangle(counter * m_RectWidth, 0, m_RectWidth, Random::FloatRange(50, 700)));
+		m_Rectangles.emplace_back(FRectangle(counter * rectWidth, 0, m_RectWidth, Random::FloatRange(50, 700)));
 		++counter;
 	}
 }
@@ -97,9 +90,31 @@ void App::Render()
 
 void App::Update()
 {
-	m_SortContext->SetSorter(Sort::Sorters::Merge);
+	static Sorters currentSort = Sorters::Bubble;
+	static Sorters newSort = Sorters::Bubble;
+
+	m_SortContext->SetSorter(currentSort);
 
 	m_ImGuiManager->NewFrame();
-	m_ImGuiManager->ShowWidget("Info", m_Rectangles.size());
+	m_ImGuiManager->ShowWidget("Info", m_Rectangles.size(), { "Bubble", "Quick", "Merge" }, newSort);
+
+	if (newSort != currentSort)
+	{
+		m_StopSort = true;
+		if (m_SorterThread && m_SorterThread->joinable())
+			m_SorterThread->join();
+
+		m_StopSort = false;
+		ShuffleBars(m_RectWidth);
+		currentSort = newSort;
+
+
+		m_SorterThread = std::make_unique<std::thread>([&]() {
+			m_SortContext->SetSorter(currentSort);
+			m_SortContext->Sort(m_Rectangles, m_StopSort);
+			});
+	}
 }
+
+
 

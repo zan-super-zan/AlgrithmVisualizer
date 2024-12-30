@@ -6,38 +6,34 @@
 #include <mutex>
 
 
-namespace Sort
+enum class Sorters
 {
-	enum Sorters
-	{
-		Bubble = 0, Quick, Merge
-	};
-}
+	Bubble = 0, Quick, Merge
+};
 
 class SortContext
 {
 public:
-	SortContext() : m_Sorter(std::make_unique<BubbleSort>()){ }
+	SortContext() : m_Sorter(std::make_unique<BubbleSort>()) {}
 
 	SortContext(std::unique_ptr<Sorter> sorter)
 		: m_Sorter(std::move(sorter))
 	{
 	}
 
-	void SetSorter(Sort::Sorters sort)
+	void SetSorter(Sorters sort)
 	{
-		//std::lock_guard<std::mutex> lock(m_SoterMutex);
 		switch (sort)
 		{
-		case Sort::Bubble: m_Sorter = std::make_unique<BubbleSort>(); break;
-		case Sort::Quick:  m_Sorter = std::make_unique<QuickSort>();  break;
-		case Sort::Merge:  m_Sorter = std::make_unique<MergeSort>();  break;
+		case Sorters::Bubble: m_Sorter = std::make_unique<BubbleSort>(); break;
+		case Sorters::Quick:  m_Sorter = std::make_unique<QuickSort>();  break;
+		case Sorters::Merge:  m_Sorter = std::make_unique<MergeSort>();  break;
 		}
 	}
 
-	void Sort(std::vector<FRectangle>& data)
+	void Sort(std::vector<FRectangle>& data, bool stopSort = false)
 	{
-		m_Sorter->Sort(data);
+		m_Sorter->Sort(data, stopSort);
 	}
 private:
 	std::unique_ptr<Sorter> m_Sorter;

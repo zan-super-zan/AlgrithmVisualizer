@@ -12,6 +12,10 @@
 
 #include <memory>
 #include <vector>
+#include <atomic>
+#include <thread>
+#include <mutex>
+
 
 class App
 {
@@ -22,7 +26,7 @@ public:
 	void Run();
 private:
 	void MakeRectangles();
-	void ShuffleBars();
+	void ShuffleBars(uint32_t rectWidth);
 	void Init();
 	void Render();
 	void Update();
@@ -34,11 +38,14 @@ private:
 	std::unique_ptr<Shader> m_Shader;
 	BatchRenderer m_Renderer;	
 
-	float m_RectWidth = 0;
-	std::vector<float> m_RectangleHeights;
+	float m_RectWidth;
 	std::vector<FRectangle> m_Rectangles;
+	std::atomic<bool> m_StopSort = false;
 
-	
+	std::mutex m_ThreadMutex;
+	std::unique_ptr<std::thread> m_SorterThread;
+
+		
 	std::unique_ptr<SortContext> m_SortContext;
 	std::vector<std::unique_ptr<Sorter>> m_Sorts;
 

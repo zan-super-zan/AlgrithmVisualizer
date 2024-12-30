@@ -1,7 +1,7 @@
 #include "SortAlgorithm.h"
 #include <thread>
 
-void BubbleSort::sortImpl(std::vector<FRectangle>& data)
+void BubbleSort::sortImpl(std::vector<FRectangle>& data, bool stopSort)
 {
 	bool swapped = true;
 	for (std::size_t i = 0; i < data.size() - 1 && swapped; ++i)
@@ -9,6 +9,8 @@ void BubbleSort::sortImpl(std::vector<FRectangle>& data)
 		swapped = false;
 		for (std::size_t j = 0; j < data.size() - 1 - i; ++j)
 		{
+			if (stopSort)
+				return;
 			if (data[j].Height > data[j + 1].Height)
 			{
 				std::swap(data[j].Height, data[j + 1].Height);
@@ -19,17 +21,21 @@ void BubbleSort::sortImpl(std::vector<FRectangle>& data)
 	}
 }
 
-void QuickSort::sortImpl(std::vector<FRectangle>& data)
+void QuickSort::sortImpl(std::vector<FRectangle>& data, bool stopSort)
 {
 	quickSortRecursive(data, 0, data.size() - 1);
 }
 
-void QuickSort::quickSortRecursive(std::vector<FRectangle>& arr, int32_t low, int32_t high)
+void QuickSort::quickSortRecursive(std::vector<FRectangle>& arr, int32_t low, int32_t high, bool stopSort)
 {
+	if (stopSort)
+		return;
+
 	if (low < high)
 	{
 		int pivotIndex = partition(arr, low, high);
 		// Recur on left part
+
 		quickSortRecursive(arr, low, pivotIndex - 1);
 		// Recur on right part
 		quickSortRecursive(arr, pivotIndex + 1, high);
@@ -55,14 +61,18 @@ int32_t QuickSort::partition(std::vector<FRectangle>& arr, int32_t low, int32_t 
 	return (i + 1);
 }
 
-void MergeSort::sortImpl(std::vector<FRectangle>& data)
+void MergeSort::sortImpl(std::vector<FRectangle>& data, bool stopSort)
 {
 	MergeSortRecursive(data, 0, data.size() - 1);
 }
 
-void MergeSort::MergeSortRecursive(std::vector<FRectangle>& data, int32_t left, int32_t right)
+void MergeSort::MergeSortRecursive(std::vector<FRectangle>& data, int32_t left, int32_t right, bool stopSort)
 {
-	if (left < right) {
+	if (stopSort)
+		return;
+
+	if (left < right) 
+	{
 		int mid = left + (right - left) / 2;
 		MergeSortRecursive(data, left, mid);
 		MergeSortRecursive(data, mid + 1, right);
