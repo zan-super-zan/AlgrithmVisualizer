@@ -4,7 +4,7 @@
 
 
 App::App()
-	:m_Shader(nullptr), m_Renderer(10000), m_ImGuiManager(nullptr), m_RectWidth(5.0f)
+	:m_Shader(nullptr), m_Renderer(2000), m_ImGuiManager(nullptr), m_RectWidth(1.0f)
 {
 	m_Window = std::make_unique<Window>(1280, 720, "Alorithm Visualizer");
 	m_ImGuiManager = std::make_unique<ImGuiManager>(m_Window->GetNativeWindow());
@@ -93,21 +93,21 @@ void App::Update()
 	static Sorters currentSort = Sorters::Bubble;
 	static Sorters newSort = Sorters::Bubble;
 
-	m_SortContext->SetSorter(currentSort);
-
 	m_ImGuiManager->NewFrame();
 	m_ImGuiManager->ShowWidget("Info", m_Rectangles.size(), { "Bubble", "Quick", "Merge" }, newSort);
 
 	if (newSort != currentSort)
 	{
 		m_StopSort = true;
+
 		if (m_SorterThread && m_SorterThread->joinable())
 			m_SorterThread->join();
 
-		m_StopSort = false;
+		
 		ShuffleBars(m_RectWidth);
 		currentSort = newSort;
 
+		m_StopSort = false;
 
 		m_SorterThread = std::make_unique<std::thread>([&]() {
 			m_SortContext->SetSorter(currentSort);

@@ -31,7 +31,7 @@ public:
 		}
 	}
 
-	void Sort(std::vector<FRectangle>& data, bool stopSort = false)
+	void Sort(std::vector<FRectangle>& data, std::atomic<bool>& stopSort)
 	{
 		m_Sorter->Sort(data, stopSort);
 	}

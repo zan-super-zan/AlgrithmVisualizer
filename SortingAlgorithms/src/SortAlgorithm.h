@@ -13,13 +13,13 @@ class Sorter
 public:
 	virtual ~Sorter() = default;
 
-	void Sort(std::vector<FRectangle>& data, bool stopSort = false)
+	void Sort(std::vector<FRectangle>& data, std::atomic<bool>& stopSort)
 	{
-		sortImpl(data);
+		sortImpl(data, stopSort);
 	}
 
 protected:
-	virtual void sortImpl(std::vector<FRectangle>& data, bool stopSort = false) = 0;
+	virtual void sortImpl(std::vector<FRectangle>& data, std::atomic<bool>& stopSort) = 0;
 
 protected:
 	std::chrono::milliseconds m_Delay{ 16 };
@@ -28,28 +28,28 @@ protected:
 class BubbleSort : public Sorter
 {
 protected:
-	void sortImpl(std::vector<FRectangle>& data, bool stopSort = false) override;
+	void sortImpl(std::vector<FRectangle>& data, std::atomic<bool>& stopSort) override;
 };
 
 
 class QuickSort : public Sorter
 {
 protected:
-	void sortImpl(std::vector<FRectangle>& data, bool stopSort = false) override;
+	void sortImpl(std::vector<FRectangle>& data, std::atomic<bool>& stopSort) override;
 
 private:
-	void quickSortRecursive(std::vector<FRectangle>& arr, int32_t low, int32_t high, bool stopSort = false);
+	void quickSortRecursive(std::vector<FRectangle>& arr, int32_t low, int32_t high, std::atomic<bool>& stopSort);
 	int32_t partition(std::vector<FRectangle>& arr, int32_t low, int32_t high);
 };
 
 class MergeSort : public Sorter
 {
 protected:
-	void sortImpl(std::vector<FRectangle>& data, bool stopSort = false) override;
+	void sortImpl(std::vector<FRectangle>& data, std::atomic<bool>& stopSort) override;
 
 private:
-	void MergeSortRecursive(std::vector<FRectangle>& data, int32_t left, int32_t right, bool stopSort = false);
-	void Merge(std::vector<FRectangle>& data, int32_t left, int32_t mid, int32_t right);
+	void MergeSortRecursive(std::vector<FRectangle>& data, int32_t left, int32_t right, std::atomic<bool>& stopSort);
+	void Merge(std::vector<FRectangle>& data, int32_t left, int32_t mid, int32_t right, std::atomic<bool>& stopSort);
 };
 
 
